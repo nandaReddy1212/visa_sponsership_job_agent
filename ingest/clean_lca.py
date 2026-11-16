@@ -107,8 +107,8 @@ WAGE_MIN, WAGE_MAX = 30_000, 1_000_000   # outside this range = suspicious
 def annualize_wages(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
-    wage_unit = df["WAGE_UNIT_OF_PAY"].where(df["WAGE_RATE_OF_PAY_FROM"] >= WAGE_MIN, "Year")
-    pw_unit = df["PW_UNIT_OF_PAY"].where(df["PREVAILING_WAGE"] >= WAGE_MIN, "Year")
+    wage_unit = df["WAGE_UNIT_OF_PAY"].mask(df["WAGE_RATE_OF_PAY_FROM"] >= WAGE_MIN, "Year")
+    pw_unit = df["PW_UNIT_OF_PAY"].mask(df["PREVAILING_WAGE"] >= WAGE_MIN, "Year")
     df["wage_unit_corrected"] = wage_unit != df["WAGE_UNIT_OF_PAY"]
 
     wage_mult = wage_unit.map(ANNUAL_MULTIPLIER)
@@ -274,7 +274,6 @@ if __name__ == "__main__":
     print("names with edge spaces:", (df["EMPLOYER_NAME"] != df["EMPLOYER_NAME"].str.strip()).sum())
     print("empty strings left:", (df[obj_cols_check := [c for c in df.columns if pd.api.types.is_string_dtype(df[c])]] == "").sum().sum())
     df = annualize_wages(df)
-
     df = build_company_key(df)
 
     print("\ndistinct raw names:", df["EMPLOYER_NAME"].nunique(),
