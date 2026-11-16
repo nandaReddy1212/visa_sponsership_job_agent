@@ -131,7 +131,7 @@ def annualize_wages(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def normalize_name(s: pd.Series) -> pd.Series:
-    """Remove common suffixes and punctuation, and lowercase."""
+    """Remove common suffixes and punctuation."""
     out = (
         s.str.upper()
         .str.replace(r"^THE\s+", "", regex=True)
