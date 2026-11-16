@@ -47,8 +47,6 @@ STATE_COLS = ["EMPLOYER_STATE", "WORKSITE_STATE"]
 
 BOOL_MAP = {"Y": True, "YES": True, "N": False, "NO": False}
 
-ANNUAL_MULTIPLIER = {"Year": 1, "Month": 12, "Bi-Weekly": 26, "Week": 52, "Hour": 2080}
-WAGE_MIN, WAGE_MAX = 30_000, 1_000_000   # outside this range = suspicious
 
 def _digits_only(s: pd.Series) -> pd.Series:
     """Keep only the digits in a string column."""
@@ -109,8 +107,8 @@ WAGE_MIN, WAGE_MAX = 30_000, 1_000_000   # outside this range = suspicious
 def annualize_wages(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
-    wage_unit = df["WAGE_UNIT_OF_PAY"].where(df["WAGE_RATE_OF_PAY_FROM"] < WAGE_MIN, "Year")
-    pw_unit = df["PW_UNIT_OF_PAY"].where(df["PREVAILING_WAGE"] < WAGE_MIN, "Year")
+    wage_unit = df["WAGE_UNIT_OF_PAY"].where(df["WAGE_RATE_OF_PAY_FROM"] >= WAGE_MIN, "Year")
+    pw_unit = df["PW_UNIT_OF_PAY"].where(df["PREVAILING_WAGE"] >= WAGE_MIN, "Year")
     df["wage_unit_corrected"] = wage_unit != df["WAGE_UNIT_OF_PAY"]
 
     wage_mult = wage_unit.map(ANNUAL_MULTIPLIER)
@@ -137,7 +135,7 @@ def normalize_name(s: pd.Series) -> pd.Series:
     out = (
         s.str.upper()
         .str.replace(r"^THE\s+", "", regex=True)
-        .str.replace("&", "AND", regex=False)
+        .str.replace("&", " AND ", regex=False)
         .str.replace(r"[^A-Z0-9]", " ", regex=True)
         .str.replace(r"\s+", " ", regex=True)
         .str.strip()
@@ -176,6 +174,7 @@ LABEL_RULES = {
     "staffing_naics":   r"^5613",
     "edu_naics":        r"^6113",
     "research_naics":   r"^5417",
+    "professional_naics": r"^(5416|5412)"   # management consulting, accounting
 }
 MIN_SECONDARY_CONSULT = 0.30
 MIN_DEPENDENT_CONSULT = 0.50
@@ -212,10 +211,8 @@ def build_company_profile(df: pd.DataFrame) -> pd.DataFrame:
     # Assign in reverse priority so the higher-priority rule overwrites
     prof.loc[naics.str.match(LABEL_RULES["research_naics"]), "company_type"] = "Research"
     prof.loc[naics.str.match(LABEL_RULES["edu_naics"]), "company_type"] = "University (likely cap-exempt)"
-    LABEL_RULES["professional_naics"] = r"^(5416|5412)"   # management consulting, accounting
     prof.loc[naics.str.match(LABEL_RULES["professional_naics"]), "company_type"] = "Professional services"
-    prof.loc[sec >= MIN_SECONDARY_PLACEMENT, "company_type"] = "Client placement"   # existing line
-    prof.loc[sec >= MIN_SECONDARY_PLACEMENT, "company_type"] = "Client placement"
+    prof.loc[sec >= MIN_SECONDARY_PLACEMENT, "company_type"] = "Client placement" 
     prof.loc[is_consult_naics & ((sec >= MIN_SECONDARY_CONSULT) | (dep >= MIN_DEPENDENT_CONSULT)), "company_type"] = "IT Consulting"
     prof.loc[naics.str.match(LABEL_RULES["staffing_naics"]), "company_type"] = "Staffing"
 
@@ -278,17 +275,6 @@ if __name__ == "__main__":
     print("empty strings left:", (df[obj_cols_check := [c for c in df.columns if pd.api.types.is_string_dtype(df[c])]] == "").sum().sum())
     df = annualize_wages(df)
 
-    ok = df[~df["wage_is_suspect"]]
-    print("\nannual wage percentiles:\n",
-          ok["wage_annual_from"].quantile([.05, .25, .5, .75, .95]).round(0))
-    print("\nmedian wage by PW level (should rise I -> IV):\n",
-          ok.groupby("PW_WAGE_LEVEL")["wage_annual_from"].median().round(0))
-    print("\nwage/PW ratio percentiles:\n",
-          df["wage_to_pw_ratio"].quantile([.01, .5, .99]).round(3))
-    print("\nsample suspects:\n",
-          df.loc[df["wage_is_suspect"],
-                 ["EMPLOYER_NAME", "WAGE_RATE_OF_PAY_FROM", "WAGE_UNIT_OF_PAY"]].head())
-
     df = build_company_key(df)
 
     print("\ndistinct raw names:", df["EMPLOYER_NAME"].nunique(),
@@ -314,5 +300,17 @@ if __name__ == "__main__":
     print("\nfilings by type:\n", prof.groupby("company_type")["filings"].sum().sort_values(ascending=False))
     print("\ntop 25 sponsors with labels:\n",
             prof.sort_values("filings", ascending=False).head(25)[["company_name", "company_type", "filings"]].to_string(index=False))
+    prof = add_location_and_wage_stats(df, prof)
+    ranked = rank_sponsors(prof)
+    print(f"\nranked companies: {len(ranked):,} of {len(prof):,}")
+    print("\nlocation pattern:\n", ranked["location_pattern"].value_counts())
+
+    cols = ["sponsor_rank", "company_name", "company_type", "filings", "n_worksite_states",
+            "pct_outside_top_state", "median_wage_to_pw", "sponsor_score"]
+    print("\ntop 20 overall:\n", ranked.head(20)[cols].to_string(index=False))
+    print("\ntop 15 distributed direct employers (remote-friendly candidates):\n",
+          ranked[(ranked["location_pattern"] == "Distributed")
+                 & (ranked["company_type"] == "Direct employer")].head(15)[cols].to_string(index=False))
+    
 
 
