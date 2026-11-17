@@ -220,7 +220,7 @@ def build_company_profile(df: pd.DataFrame) -> pd.DataFrame:
 
 MIN_FILINGS_TO_RANK = 5
 DISTRIBUTED_MIN_STATES = 5
-DISTRIBUTED_MIN_OUTSIDE = 0.40
+DISTRIBUTED_MIN_OUTSIDE = 0.60
 SCORE_WEIGHTS = {"volume": 0.6, "wage": 0.4}
 PLACEMENT_TYPES = {"IT Consulting", "Client placement", "Staffing"}
 
