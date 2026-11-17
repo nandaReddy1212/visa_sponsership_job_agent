@@ -140,7 +140,7 @@ def normalize_name(s: pd.Series) -> pd.Series:
         .str.replace(r"\s+", " ", regex=True)
         .str.strip()
     )
-
+    out = out.str.replace(r"\s+(F K A|FKA|FORMERLY|D B A|DBA|A K A|AKA)\b.*$", "", regex=True).str.strip()
     for _ in range(3):  # handles stacked suffixes like "... CO INC
         out = out.str.replace(SUFFIX_RE, "", regex=True).str.strip()
     return out
@@ -221,7 +221,7 @@ def build_company_profile(df: pd.DataFrame) -> pd.DataFrame:
 MIN_FILINGS_TO_RANK = 5
 DISTRIBUTED_MIN_STATES = 5
 DISTRIBUTED_MIN_OUTSIDE = 0.40
-SCORE_WEIGHTS = {"volume": 0.4, "wage": 0.3, "distribution": 0.3}
+SCORE_WEIGHTS = {"volume": 0.6, "wage": 0.4}
 PLACEMENT_TYPES = {"IT Consulting", "Client placement", "Staffing"}
 
 def add_location_and_wage_stats(df: pd.DataFrame, prof: pd.DataFrame) -> pd.DataFrame:
@@ -254,27 +254,33 @@ def add_location_and_wage_stats(df: pd.DataFrame, prof: pd.DataFrame) -> pd.Data
 def rank_sponsors(prof: pd.DataFrame) -> pd.DataFrame:
     r = prof[(prof["filings"] >= MIN_FILINGS_TO_RANK)
              & ~prof["willful_violator"].fillna(False)].copy()
-
-    r["volume_pct"] = r["filings"].rank(pct=True)
-    r["wage_pct"] = r["median_wage_to_pw"].rank(pct=True).fillna(0)
-    r["distribution_pct"] = r["pct_outside_top_state"].rank(pct=True)
-    r["sponsor_score"] = (100 * (SCORE_WEIGHTS["volume"] * r["volume_pct"]
-                               + SCORE_WEIGHTS["wage"] * r["wage_pct"]
-                               + SCORE_WEIGHTS["distribution"] * r["distribution_pct"])).round(1)
+    # Log scale keeps big sponsors apart: 54 filings -> 0.42, Amazon -> 1.0
+    r["volume_score"] = np.log1p(r["filings"])/np.log1p(r["filings"].max())
+    r["wage_score"] = r["median_wage_to_pw"].rank(pct=True).fillna(0)
+    r["sponsor_score"] = (100 * (SCORE_WEIGHTS["volume"] * r["volume_score"]
+                               + SCORE_WEIGHTS["wage"] * r["wage_score"])).round(1)
 
     r["sponsor_rank"] = r["sponsor_score"].rank(ascending=False, method="min").astype(int)
+    # Separate attribute for remote filtering, not part of sponsor_score
+    r["distribution_score"] = (100 * r["pct_outside_top_state"].rank(pct=True)).round(1)
     return r.sort_values("sponsor_rank")
+
+def run(parquet_path: str = "data/interim/lca_raw.parquet"):
+    df = filter_rows(pd.read_parquet(parquet_path))
+    df = standardize_types(df)
+    df = annualize_wages(df)
+    df = build_company_key(df)
+    prof = build_company_profile(df)
+    prof = add_location_and_wage_stats(df, prof)
+    ranked = rank_sponsors(prof)
+    return df, prof, ranked
 
 
 
 if __name__ == "__main__":
-    raw = pd.read_parquet("data/interim/lca_raw.parquet")
-    df = filter_rows(raw)
-    df = standardize_types(df)
+    df, prof, ranked = run()
     print("names with edge spaces:", (df["EMPLOYER_NAME"] != df["EMPLOYER_NAME"].str.strip()).sum())
     print("empty strings left:", (df[obj_cols_check := [c for c in df.columns if pd.api.types.is_string_dtype(df[c])]] == "").sum().sum())
-    df = annualize_wages(df)
-    df = build_company_key(df)
 
     print("\ndistinct raw names:", df["EMPLOYER_NAME"].nunique(),
           "| normalized:", df["employer_name_norm"].nunique(),
@@ -293,19 +299,15 @@ if __name__ == "__main__":
     print("\ntop 15 sponsors by filings:\n",
           df.groupby("company_name").size().sort_values(ascending=False).head(15))
 
-    prof = build_company_profile(df)
-
     print("\ncompanies by type:\n", prof["company_type"].value_counts())
     print("\nfilings by type:\n", prof.groupby("company_type")["filings"].sum().sort_values(ascending=False))
     print("\ntop 25 sponsors with labels:\n",
             prof.sort_values("filings", ascending=False).head(25)[["company_name", "company_type", "filings"]].to_string(index=False))
-    prof = add_location_and_wage_stats(df, prof)
-    ranked = rank_sponsors(prof)
     print(f"\nranked companies: {len(ranked):,} of {len(prof):,}")
     print("\nlocation pattern:\n", ranked["location_pattern"].value_counts())
 
     cols = ["sponsor_rank", "company_name", "company_type", "filings", "n_worksite_states",
-            "pct_outside_top_state", "median_wage_to_pw", "sponsor_score"]
+            "pct_outside_top_state", "median_wage_to_pw", "sponsor_score", "distribution_score"]
     print("\ntop 20 overall:\n", ranked.head(20)[cols].to_string(index=False))
     print("\ntop 15 distributed direct employers (remote-friendly candidates):\n",
           ranked[(ranked["location_pattern"] == "Distributed")
