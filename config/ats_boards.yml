@@ -3,10 +3,13 @@
 discovery:
   top_n: 500                # top sponsors by sponsor_rank to search
   min_slug_len: 3                 # minimum length of slug to search
+  workers: 8               # parallel HTTP threads
+  timeout_s: 10            # per-request timeout
+  name_match_ratio: 0.8    # Greenhouse board name vs company name similarity
   generic_words:
-    [SERVICES, SOLUTIONS, TECHNOLOGIES, TECHNOLOGY, GROUP, HOLDINGS,
-     INTERNATIONAL, GLOBAL, SYSTEMS, AMERICA, USA, US, THE, AND, OF,
-     INC, LLC, CORP, CORPORATION, CO, COMPANY, LTD, LP, LLP, UNITED, STATES]
+  [SERVICES, SOLUTIONS, TECHNOLOGIES, TECHNOLOGY, GROUP, HOLDINGS,
+    INTERNATIONAL, GLOBAL, SYSTEMS, AMERICA, USA, US, THE, AND, OF,
+    INC, LLC, CORP, CORPORATION, CO, COMPANY, LTD, LP, LLP, UNITED, STATES]
 
 # Boards whose slug can't be guessed from the company name.
 # company_key comes from the sponsors table; keep the name as a comment.
@@ -15,6 +18,3 @@ overrides: []
 # Boards whose slug can't be guessed from the company name.
 # company_key comes from the sponsors table; keep the name as a comment.
 
-workers: 8               # parallel HTTP threads
-timeout_s: 10            # per-request timeout
-name_match_ratio: 0.8    # Greenhouse board name vs company name similarity
