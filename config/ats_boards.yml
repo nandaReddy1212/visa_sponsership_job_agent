@@ -14,3 +14,7 @@ discovery:
 overrides: []
 # Boards whose slug can't be guessed from the company name.
 # company_key comes from the sponsors table; keep the name as a comment.
+
+workers: 8               # parallel HTTP threads
+timeout_s: 10            # per-request timeout
+name_match_ratio: 0.8    # Greenhouse board name vs company name similarity
