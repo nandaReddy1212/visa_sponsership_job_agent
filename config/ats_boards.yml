@@ -7,7 +7,7 @@ discovery:
   timeout_s: 10            # per-request timeout
   name_match_ratio: 0.8    # Greenhouse board name vs company name similarity
   generic_words:
-  [SERVICES, SOLUTIONS, TECHNOLOGIES, TECHNOLOGY, GROUP, HOLDINGS,
+    [SERVICES, SOLUTIONS, TECHNOLOGIES, TECHNOLOGY, GROUP, HOLDINGS,
     INTERNATIONAL, GLOBAL, SYSTEMS, AMERICA, USA, US, THE, AND, OF,
     INC, LLC, CORP, CORPORATION, CO, COMPANY, LTD, LP, LLP, UNITED, STATES]
 
