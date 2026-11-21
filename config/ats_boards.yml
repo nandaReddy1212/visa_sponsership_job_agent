@@ -6,6 +6,7 @@ discovery:
   workers: 8               # parallel HTTP threads
   timeout_s: 10            # per-request timeout
   name_match_ratio: 0.8    # Greenhouse board name vs company name similarity
+  min_jobs_medium: 10
   generic_words:
     [SERVICES, SOLUTIONS, TECHNOLOGIES, TECHNOLOGY, GROUP, HOLDINGS,
     INTERNATIONAL, GLOBAL, SYSTEMS, AMERICA, USA, US, THE, AND, OF,
@@ -14,7 +15,29 @@ discovery:
 # Boards whose slug can't be guessed from the company name.
 # company_key comes from the sponsors table; keep the name as a comment.
 
-overrides: []
-# Boards whose slug can't be guessed from the company name.
-# company_key comes from the sponsors table; keep the name as a comment.
+overrides:
+  - company_key: "041378465"
+    ats: greenhouse
+    slug: goodwin
+  - company_key: "263302902"
+    ats: greenhouse
+    slug: weave
+  - company_key: "030524476"
+    ats: lever
+    slug: syntax
+  - company_key: "271573058"
+    ats: greenhouse
+    slug: resonate
+  - company_key: "364476242"
+    ats: lever
+    slug: basis
 
+
+# Boards matched by mistake. Removed even if the match rules accept them.
+rejects: []
+#  - company_key: "123456789"   # Example Corp
+#    slug: example
+
+fetch:
+  workers: 8
+  timeout_s: 30            # job lists with full descriptions are large
