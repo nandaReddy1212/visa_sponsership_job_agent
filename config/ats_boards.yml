@@ -41,3 +41,114 @@ rejects: []
 fetch:
   workers: 8
   timeout_s: 30            # job lists with full descriptions are large
+
+parse:
+  stale_after_days: 90
+  us_cities:
+    - New York
+    - NYC
+    - San Francisco
+    - Bay Area
+    - Seattle
+    - Austin
+    - Boston
+    - Chicago
+    - Los Angeles
+    - Denver
+    - Atlanta
+    - Washington DC
+    - Miami
+    - San Jose
+    - Palo Alto
+    - Mountain View
+    - Menlo Park
+    - Sunnyvale
+    - Redwood City
+    - Oakland
+    - San Diego
+    - Portland
+    - Pittsburgh
+    - Philadelphia
+    - Dallas
+    - Houston
+    - Raleigh
+    - Charlotte
+    - Salt Lake City
+    - Phoenix
+    - Minneapolis
+    - Nashville
+    - Detroit
+    - Columbus
+    - Orlando
+    - Waltham
+    - Orange County
+    - DMV
+
+  non_us_markers:
+    - Canada
+    - UK
+    - United Kingdom
+    - England
+    - Ireland
+    - India
+    - Singapore
+    - Australia
+    - Germany
+    - France
+    - Netherlands
+    - Spain
+    - Poland
+    - Japan
+    - China
+    - Hong Kong
+    - Brazil
+    - Mexico
+    - Israel
+    - Switzerland
+    - Romania
+    - Philippines
+    - London
+    - Dublin
+    - Toronto
+    - Vancouver
+    - Bengaluru
+    - Bangalore
+    - Hyderabad
+    - Sydney
+    - Berlin
+    - Paris
+    - Amsterdam
+    - Tokyo
+    - Tel Aviv
+    - EMEA
+    - APAC
+    - LATAM
+    - Bulgaria
+    - Gurgaon
+    - Gurugram
+    - Colombia
+    - Korea
+    - Kuwait
+    - Argentina
+    - Buenos Aires
+    - Saudi Arabia
+    - Riyadh
+    - Montreal
+    - Denmark
+    - Taiwan
+    - Munich
+    - Qatar
+    - Doha
+    - UAE
+    - Vietnam
+    - South Korea
+    - Milan
+    - Stockholm
+    - Bucharest
+    - Europe
+    - Shanghai, 
+    - Madrid, 
+    - Barcelona, 
+    - Abu 
+    - Dhabi, 
+    - Chennai
