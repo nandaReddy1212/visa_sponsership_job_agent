@@ -27,6 +27,6 @@ AND is_us AND NOT is_stale AND NOT is_intership
 AND evidence_level IN ('strong', 'some', 'occupation')
 ORDER BY 
 CASE workplace_type WHEN 'remote' THEN 1 WHEN 'hybrid' THEN 2 ELSE 3 END,
-CASE evidence_type WHEN 'Strong' THEN 1 WHEN 'some' THEN 2 ELSE 3 END,
+CASE evidence_level  WHEN 'Strong' THEN 1 WHEN 'some' THEN 2 ELSE 3 END,
 sponsor_score DESC, posted_at DESC
 LIMIT 10;
