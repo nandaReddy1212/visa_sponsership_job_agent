@@ -43,7 +43,7 @@ fetch:
   timeout_s: 30            # job lists with full descriptions are large
 
 parse:
-  stale_after_days: 90
+  stale_after_days: 180
   us_cities:
     - New York
     - NYC
@@ -152,3 +152,27 @@ parse:
     - Abu 
     - Dhabi, 
     - Chennai
+
+evidence:
+  title_match_min: 0.6       # share of the shorter title's words that must match
+  min_shared_words: 2        # unless the titles are identical
+  strong_min_filings: 3
+  drop_words: [senior, sr, junior, jr, staff, principal, lead, associate, mid, level,
+               i, ii, iii, iv, v, the, and, of, for, to, a, an, remote, hybrid, us, usa]
+  soc_min_filings: 10      # national filings needed before a title's SOC pattern is trusted
+  soc_min_share: 0.10      # an occupation must account for 10%+ of a title's filings
+
+  synonyms:
+    developer: engineer
+    dev: engineer
+    eng: engineer
+    swe: software engineer
+    sde: software engineer
+    ml: machine learning
+    mgr: manager
+    android: android software
+    ios: ios software
+    mobile: mobile software
+    backend: backend software
+    frontend: frontend software
+    fullstack: fullstack software
