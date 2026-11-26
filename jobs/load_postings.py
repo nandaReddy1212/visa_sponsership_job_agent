@@ -19,7 +19,7 @@ def _table_exists(client: bigquery.Client, table_id: str) -> bool:
 
 def load_postings(client: bigquery.Client, df: pd.DataFrame) -> None:
     if df["run_date"].nunique() != 1:
-        return ValueError("expected exactly one run_date per load")
+        raise ValueError("expected exactly one run_date per load")
     run_date = df["run_date"].iloc[0]
 
     df = df.copy()

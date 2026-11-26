@@ -19,14 +19,15 @@ from `h1b_jobs.job_postings`
 GROUP BY run_date ORDER BY run_date DESC;
 
 -- Preview of the daily email: best US remote jobs with strong evidence
-SELECT company_name, title, location_display, matched_median_wage,
-       title_match_filings, sponser_rank, posted_at, url
+-- Preview of the daily email: remote first, then hybrid, then onsite
+SELECT company_name, title, workplace_type, location_display, evidence_level,
+       matched_median_wage, title_match_filings, sponsor_rank, posted_at, url
 FROM `h1b_jobs.job_postings`
-WHERE run_date = (SELECT MAX(run_date) from `h1b_jobs.job_postings`)
-AND is_us AND NOT is_stale AND NOT is_intership
-AND evidence_level IN ('strong', 'some', 'occupation')
-ORDER BY 
-CASE workplace_type WHEN 'remote' THEN 1 WHEN 'hybrid' THEN 2 ELSE 3 END,
-CASE evidence_level  WHEN 'Strong' THEN 1 WHEN 'some' THEN 2 ELSE 3 END,
-sponsor_score DESC, posted_at DESC
+WHERE run_date = (SELECT MAX(run_date) FROM `h1b_jobs.job_postings`)
+  AND is_us AND NOT is_stale AND NOT is_internship
+  AND evidence_level IN ('strong', 'some', 'occupation')
+ORDER BY
+  CASE workplace_type WHEN 'remote' THEN 1 WHEN 'hybrid' THEN 2 ELSE 3 END,
+  CASE evidence_level WHEN 'strong' THEN 1 WHEN 'some' THEN 2 ELSE 3 END,
+  sponsor_score DESC, posted_at DESC
 LIMIT 10;
