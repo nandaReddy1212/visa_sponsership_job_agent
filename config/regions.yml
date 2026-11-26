@@ -1,0 +1,22 @@
+# =====================================================================
+#  U.S. regions — SHARED PIPELINE CONFIG (do not edit per person)
+# =====================================================================
+#
+#  Defines which states belong to each region name. Candidate profiles
+#  refer to these names in `region_order`, so nobody has to list states
+#  themselves.
+#
+#  A state may appear in more than one region (e.g. VA is both
+#  mid_atlantic and southeast). The first region in a candidate's
+#  region_order that contains the job's state is the one that counts.
+# =====================================================================
+
+regions:
+  northeast:     [ME, NH, VT, MA, RI, CT, NY]
+  mid_atlantic:  [NJ, PA, DE, MD, DC, VA]
+  southeast:     [NC, SC, GA, FL, VA, TN, AL]
+  midwest:       [OH, MI, IN, IL, WI, MN, IA, MO, ND, SD, NE, KS]
+  south_central: [TX, OK, AR, LA, MS, KY, WV]
+  mountain:      [MT, ID, WY, CO, UT]
+  southwest:     [AZ, NM, NV]
+  west_coast:    [WA, OR, CA, AK, HI]

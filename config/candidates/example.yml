@@ -1,0 +1,92 @@
+# =====================================================================
+#  Candidate profile — TEMPLATE
+# =====================================================================
+#
+#  This file describes ONE job seeker: what roles they want, where they
+#  live, and how their daily job email should look.
+#
+#  HOW TO USE
+#    1. Copy this file and name the copy after yourself:
+#         config/candidates/example.yml  ->  config/candidates/<your-name>.yml
+#    2. Edit only the copy. Leave this example unchanged.
+#    3. Run the ranking with your profile name:
+#         python -m jobs.rank_jobs --candidate <your-name>
+#
+#  PRIVACY
+#    Your copy is ignored by git (see .gitignore), so your zip code and
+#    preferences are never pushed to GitHub. Only this example is shared.
+#
+#  WHAT YOU CAN CHANGE
+#    Everything in this file is yours to edit.
+#    Do NOT edit config/ats_boards.yml or config/regions.yml — those
+#    control how the pipeline works for everyone.
+# =====================================================================
+
+
+# ---------------------------------------------------------------------
+#  1. ROLES — what job titles are you looking for?
+# ---------------------------------------------------------------------
+#  List 1–3 job titles in plain words, the way a job post would write
+#  them. No keyword lists needed: similar titles and closely related
+#  roles are found automatically from U.S. H-1B filing data.
+#
+#  Examples:
+#    Data engineer:        [Data Engineer, Analytics Engineer]
+#    Full-stack developer: [Full Stack Developer]
+#    ML engineer:          [Machine Learning Engineer, Applied Scientist]
+#    Product manager:      [Product Manager]
+#    QA / test engineer:   [QA Engineer, Software Development Engineer in Test]
+
+target_titles: [Software Engineer]
+
+#  Also show closely related roles (same kind of work, different title)?
+#    true  -> e.g. a "Data Engineer" profile also sees "Data Scientist" roles
+#    false -> only jobs whose titles match target_titles
+include_adjacent: true
+
+
+# ---------------------------------------------------------------------
+#  2. LOCATION — used to rank hybrid and on-site jobs
+# ---------------------------------------------------------------------
+#  Remote jobs are always ranked first. For hybrid and on-site jobs,
+#  closer is better: within commuting distance, then your state, then
+#  the regions you list below, then anywhere in the U.S.
+
+location:
+  zip: "00000"           # your 5-digit U.S. ZIP code — keep the quotes
+  commute_miles: 40      # how far you'd commute for a hybrid/on-site job
+
+
+# ---------------------------------------------------------------------
+#  3. REGIONS — your preferred regions, in order
+# ---------------------------------------------------------------------
+#  Used for hybrid/on-site jobs outside commuting distance and your state.
+#  Put the regions you prefer first. Remove any you'd never move to.
+#
+#  Available region names (defined in config/regions.yml):
+#    northeast, mid_atlantic, southeast, midwest,
+#    south_central, mountain, southwest, west_coast
+
+region_order: [southeast, mid_atlantic, northeast, south_central,
+               midwest, southwest, mountain, west_coast]
+
+#  Show on-site/hybrid jobs anywhere in the U.S. if nothing closer matches?
+include_anywhere_us: true
+
+
+# ---------------------------------------------------------------------
+#  4. DAILY EMAIL — how many jobs, and what mix
+# ---------------------------------------------------------------------
+
+email:
+  top_n: 10              # jobs per email
+  remote_slots: 7        # how many of top_n are remote; the rest are
+                         # hybrid/on-site. If one kind runs short, the
+                         # other fills the empty slots.
+
+  # Minimum H-1B evidence a job needs to be included:
+  #   strong      -> the company filed 3+ H-1B LCAs for similar job titles
+  #   some        -> 1–2 filings for similar job titles
+  #   occupation  -> filings in the same government occupation category
+  # Remove "occupation" for stricter results, or keep it for more jobs.
+  min_evidence: [strong, some, occupation]
